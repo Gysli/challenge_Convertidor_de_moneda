@@ -1,0 +1,8 @@
+public enum moneda{
+        USD,
+        ARS,
+        BRL,
+        COP
+}
+
+
