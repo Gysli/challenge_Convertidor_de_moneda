@@ -1,38 +1,37 @@
-import com.google.gson.JsonElement;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
+public class ConversorApi {
 
-public class PrincipalAPI {
+    public void tasadeCambio(moneda busqueda1, moneda busqueda2, double CantidadIngresadaUsuaio) throws IOException, InterruptedException {
 
-    public static void main(String[] args) throws IOException, InterruptedException{
+        double conversion = 0.00;
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://v6.exchangerate-api.com/v6/f95aaa12fb6c66fbfa9e6e66/latest/USD"))
+                .build();
+        HttpResponse<String> response = client
+                .send(request, HttpResponse.BodyHandlers.ofString());
 
-
-        URL url = new URL("https://v6.exchangerate-api.com/v6/f95aaa12fb6c66fbfa9e6e66/pair");
-        HttpURLConnection request = (HttpURLConnection) url.openConnection();
-        request.connect();
-
-        // convertir a JSON
-
-        JsonParser jp = new JsonParser();
-        JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent()));
-        JsonObject jsonobj = root.getAsJsonObject();
-
-        // Accediendo al objeto
-        String req_result = jsonobj.get("result").getAsString();
-        System.out.println(req_result);
-
-
-    }
-
-    public String PrincipalAPI(int opcion, double cantidadIngresadaUsuario) {
-
-        return "";
+        JsonObject jsonObject = new Gson().fromJson(response.body(), JsonObject.class);
+        JsonObject tasasConversion = jsonObject.getAsJsonObject("conversion_rates");
+        var valorMoneda = tasasConversion.get(String.valueOf(busqueda2)).getAsDouble();
+        if (busqueda1.equals(busqueda2)) {
+            conversion = CantidadIngresadaUsuaio / valorMoneda;
+            conversion = Math.round(conversion+100)/100d;
+        } else {
+            conversion = CantidadIngresadaUsuaio * valorMoneda;
+            conversion = Math.round(conversion+100)/100d;
+        }
+        System.out.println("La conversión de  " + CantidadIngresadaUsuaio+ " " + busqueda1 + " a " + conversion + " " + busqueda2);
     }
 }
+
+
+
